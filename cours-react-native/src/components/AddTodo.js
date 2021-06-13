@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Button, Alert } from 'react-native';
+import { View, StyleSheet, TextInput, Button, Alert, Keyboard } from 'react-native';
 import { AntDesign } from '@expo/vector-icons/build/Icons';
 import { THEME } from '../theme';
 
@@ -11,6 +11,7 @@ export const AddTodo = ({ onSubmit }) => {
 		if (value.trim()) {
 			onSubmit(value.trim())
 			setValue('')
+			Keyboard.dismiss()
 		} else {
 			Alert.alert('Введите текст...')
 		}
@@ -27,7 +28,7 @@ export const AddTodo = ({ onSubmit }) => {
 
 			<AntDesign.Button onPress={pressHendler} name='pluscircleo'>
 				Добавить
-		</AntDesign.Button>
+			</AntDesign.Button>
 			{/* <Button title='Добавить' onPress={pressHendler} /> */}
 		</View>
 	)
