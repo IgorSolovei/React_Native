@@ -1,20 +1,39 @@
 import React, { useReducer, useContext } from 'react'
 import { Alert } from 'react-native'
 import { ScreenContext } from '../screen/screenContext'
-import { ADD_TODO, REMOVE_TODO, UPDATE_TODO } from '../types'
+import {
+	ADD_TODO,
+	CLEAR_ERROR,
+	HIDE_LOADER,
+	REMOVE_TODO,
+	SHOW_ERROR,
+	SHOW_LOADER,
+	UPDATE_TODO
+} from '../types'
 import { TodoContext } from './todoContext'
 import { todoReduser } from './todoReduser'
 
 export const TodoState = ({ children }) => {
 	const initialState = {
-		todos: []
+		todos: [],
+		loading: false,
+		error: null
 	}
 
 	const { changeScreen } = useContext(ScreenContext)
 
 	const [state, dispath] = useReducer(todoReduser, initialState)
 
-	const addTodo = title => dispath({ type: ADD_TODO, title })
+	const addTodo = async title => {
+		const response = await fetch('https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos.json', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ title })
+		})
+		const data = await response.json()
+
+		dispath({ type: ADD_TODO, title, id: data.name })
+	}
 
 	const removeTodo = id => {
 		const todo = state.todos.find(t => t.id === id)
@@ -41,6 +60,14 @@ export const TodoState = ({ children }) => {
 	}
 
 	const updateTodo = (id, title) => dispath({ type: UPDATE_TODO, id, title })
+
+	const showLoader = () => dispath({ type: SHOW_LOADER })
+
+	const hideLoader = () => dispath({ type: HIDE_LOADER })
+
+	const showError = error => dispath({ type: SHOW_ERROR, error })
+
+	const clearError = () => dispath({ type: CLEAR_ERROR })
 
 	return <TodoContext.Provider
 		value={{
