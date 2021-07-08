@@ -4,6 +4,7 @@ import { ScreenContext } from '../screen/screenContext'
 import {
 	ADD_TODO,
 	CLEAR_ERROR,
+	FETCH_TODOS,
 	HIDE_LOADER,
 	REMOVE_TODO,
 	SHOW_ERROR,
@@ -59,6 +60,18 @@ export const TodoState = ({ children }) => {
 
 	}
 
+	const fetchTodos = async () => {
+		const response = await fetch('https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos.json', {
+			method: 'GET',
+			headers: { 'Content-Type': 'application/json' }
+		})
+		const data = await response.json()
+		console.log('Fetch Data', data)
+		const todos = Object.keys(data).map(key => ({ ...data[key], id: key }))
+		setTimeout(() => dispath({ type: FETCH_TODOS, todos }), 5000)
+
+	}
+
 	const updateTodo = (id, title) => dispath({ type: UPDATE_TODO, id, title })
 
 	const showLoader = () => dispath({ type: SHOW_LOADER })
@@ -72,9 +85,12 @@ export const TodoState = ({ children }) => {
 	return <TodoContext.Provider
 		value={{
 			todos: state.todos,
+			loading: state.loading,
+			error: state.error,
 			addTodo,
 			removeTodo,
 			updateTodo,
+			fetchTodos
 		}}>
 		{children}
 	</TodoContext.Provider>
