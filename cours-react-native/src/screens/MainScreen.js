@@ -43,7 +43,7 @@ export const MainScreen = () => {
 			<AppText style={style.error}>
 				{error}
 			</AppText>
-			<AppButton onPress={loadTodos} > Повторить</AppButton >
+			<AppButton onPress={loadTodos} >Повторить</AppButton >
 		</View >
 	}
 

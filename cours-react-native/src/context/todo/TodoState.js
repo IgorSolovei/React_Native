@@ -13,6 +13,7 @@ import {
 } from '../types'
 import { TodoContext } from './todoContext'
 import { todoReduser } from './todoReduser'
+import { Http } from '../../http'
 
 export const TodoState = ({ children }) => {
 	const initialState = {
@@ -26,14 +27,15 @@ export const TodoState = ({ children }) => {
 	const [state, dispath] = useReducer(todoReduser, initialState)
 
 	const addTodo = async title => {
-		const response = await fetch('https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos.json', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ title })
-		})
-		const data = await response.json()
+		clearError()
+		try {
+			const data = await Http.post('https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos.json', { title })
 
-		dispath({ type: ADD_TODO, title, id: data.name })
+			dispath({ type: ADD_TODO, title, id: data.name })
+		} catch (e) {
+			showError('Что-то пошло не так...')
+		}
+
 	}
 
 	const removeTodo = id => {
@@ -49,8 +51,10 @@ export const TodoState = ({ children }) => {
 				{
 					text: 'Удалить',
 
-					onPress: () => {
+					onPress: async () => {
 						changeScreen(null)
+						await Http.delete(`https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos/${id}.json`)
+
 						dispath({ type: REMOVE_TODO, id })
 					}
 				},
@@ -63,13 +67,9 @@ export const TodoState = ({ children }) => {
 	const fetchTodos = async () => {
 		showLoader()
 		clearError()
+
 		try {
-			const response = await fetch('https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos.json', {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' }
-			})
-			const data = await response.json()
-			//console.log('Fetch Data', data)
+			const data = await Http.get('https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos.json')
 			const todos = Object.keys(data).map(key => ({ ...data[key], id: key }))
 			dispath({ type: FETCH_TODOS, todos })
 
@@ -82,7 +82,19 @@ export const TodoState = ({ children }) => {
 		}
 	}
 
-	const updateTodo = (id, title) => dispath({ type: UPDATE_TODO, id, title })
+	const updateTodo = async (id, title) => {
+		clearError()
+		try {
+
+			await Http.patch(`https://rn-todo-app-60a04-default-rtdb.firebaseio.com/todos/${id}.json`, { title })
+			dispath({ type: UPDATE_TODO, id, title })
+		} catch (e) {
+			showError('Что-то пошло не так...')
+			console.log(e);
+
+		}
+
+	}
 
 	const showLoader = () => dispath({ type: SHOW_LOADER })
 
